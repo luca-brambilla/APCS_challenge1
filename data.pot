@@ -1,0 +1,19 @@
+# initial condition for initial value problem
+y0 = 0.0
+# integration extremum for time
+T = 1.0
+# value of theta for the theta-method
+theta = 0.5
+# initial value of N
+# to be multiplied by FACTOR for the first point of the convergence analysis
+N_INIT = 1
+# multiplication factor of N for each point of the convergence analysis
+FACTOR = 5
+# number of points for convergence analysis
+NUM_ERR = 6
+# function for the Cauchy problem
+fun_str    = -t*exp(-y)
+# derivative of function for the Cauchy problem
+dfun_str   = t*exp(-y)
+# exact solution for comparing results
+exfun_str  = log(-t*t/2+1)

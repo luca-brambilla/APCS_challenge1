@@ -1,0 +1,159 @@
+\documentclass[]{article}
+
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{graphicx}
+
+
+%opening
+\title{Advanced Programmig for Scientific Computing\\Challenge 1}
+\author{Luca Brambilla}
+
+\begin{document}
+	
+	\maketitle
+	
+	
+\section{Problem}
+Solve numerically the initially value Cauchy problem using the Crank-Nicolson numerical scheme.
+
+$$
+	\begin{cases}
+		y'(t) = f(t, y(t)), \quad t \in I = (0, T] \\
+		y(0) = y_0
+	\end{cases}
+$$
+Considering in particular the problem:
+$$
+\begin{cases}
+	y'(t) = -t e^{-y} , \quad t \in I = (0, T] \\
+	y(0) = 0
+\end{cases}
+$$
+
+
+\section{Solution}
+
+\subsection{Analytic solution}
+Analytic solution of the nonlinear $1^{st}$ order ODE using separation of variables
+
+$$\int e^y dy = \int -t dt \Longleftrightarrow e^y = -\frac{1}{2} x^2 + C \Longleftrightarrow y = \log \left( C - \frac{1}{2} x^2 \right)$$
+Finally, using the initial condition $y(0)=0$ we get the exact solution:
+$$y_{ex} (t) = \log\left( 1 - \frac{1}{2} x^2 \right)$$
+
+\newpage
+
+\subsection{Numerical approximation}
+Now considering the sumerical approximation of the IV problem using Crank-Nicolson numerical scheme. 
+
+Being $N$ a positive integer and $h = T /N$ the time step, the method consists in finding $u_n \simeq y(t_n )$ for $t_n = nh$.
+At each iteration we have:
+$$u_{n+1} = u_n + \frac{h}{2} \left( f(t_{n+1},u_{n+1}) + f(t_{n},u_{n})  \right) \qquad \forall n = 0, \ldots , N - 1, \; u_0 = y_0 . $$
+
+The method is implicit in $u_{n+1}$, therefore at each iteration we must find the zero of:
+\begin{equation}\label{eq::nonlin}
+	F(x) = x - u_n - \frac{h}{2} \left( f(t_{n+1}, x) + f(t_{n},u_{n})  \right) 
+\end{equation}
+given we know $u_n$ from the previous step.
+
+Adopting the Newton-Rapson method to find the zero of each iteration $n$:
+$$x_{k+1} = x_{k} - \frac{F(x_k)}{F'(x_k)}$$
+using the derivative of $F(x)$: 
+\begin{equation}\label{eq::nonlinder}
+	F'(x) = 1 - \frac{h}{2}  f_x(t_{n+1}, x)
+\end{equation}
+The initial guess is set equal to the approximated solution from the previous step $x_0 = u_n$. If the residual  and $k$ satisfy the stopping criteria:
+$$|x_{k+1} - x_{k} | =\left|-  \frac{F(x_k)}{F'(x_k)} \right|  < TOL, \quad k<k_{max}$$
+we set $u_{n+1} = x_{k+1}$ after $k$ iterations.
+
+In this particular case we will consider:
+$$f(t, y(t)) = -t e^{-y}, \qquad f_y (t, y(t)) = +t e^{-y} $$
+to be plugged as part of $F(x)$ and $F'(x)$. In Figure \ref{fig::solution} we can see the numerical solution of the problem compared with the exact solution.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{../figures/plot_N25.pdf}
+	\caption{Plot of the solution of the problem. Comparing the exact solution and the approximated solution.}
+	\label{fig::solution}
+\end{figure}
+
+\newpage
+
+\subsection{Convergence analysis}
+
+We find quadratic convergence as expected:
+$$| |  u - u_h ||_{L^\infty( I )} \leq Ch^2$$
+We can see it in Figure \ref{fig::order2}.
+
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{../figures/conv_theta0.500000.pdf}
+	\caption{The convergence analysis shows a $2^{nd}$ order convergence of the solution with respect to the discretization.}
+	\label{fig::order2}
+\end{figure}
+
+
+\section{Extensions}
+
+\subsection{$\theta$-method}
+
+Extension to more general $\theta$ method with $\theta \in [0,1]$:
+$$u_{n+1} = u_n + h \left( (1-\theta) f(t_{n+1},u_{n+1}) + \theta f(t_{n},u_{n})  \right) $$
+
+\begin{enumerate}
+\item $\theta = 0$ to retrieve forward Euler method.
+\item $\theta = 1$ to retrieve backward Euler method.
+\item $\theta = \frac{1}{2}$ to retrieve Crank-Nicolson.
+\end{enumerate}
+In this more general case Equations \ref{eq::nonlin} and \ref{eq::nonlinder} become:
+$$F(x) = x - u_n - h \left( (1-\theta) f(t_{n+1}, x) + \theta f(t_{n},u_{n})  \right) $$ 
+$$F'(x) = 1 - h (1-\theta) f_x(t_{n+1}, x)  $$ 
+
+Changing the value oh $\theta$ the order of convergence changes and we get linear convergence, as expected (see Figure \ref{fig::order1}).
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta0.000000.pdf} \hfill
+	\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta1.000000.pdf}
+	\caption{The convergence analysis shows a $1^{st}$ order convergence of the solution with respect to the discretization.}
+	\label{fig::order1}
+\end{figure}
+
+\newpage
+
+\subsection{\texttt{gnuplot}, \texttt{GetPot}, \texttt{muparser}}
+
+Imported header files to add more functionality:
+\begin{enumerate}
+	\item  Imported \texttt{gnuplot\_iostream} to use \texttt{gnuplot} directly from the source code. 
+	\item Imported \texttt{GetPot} to read from an external text  file. 
+	\item Imported \texttt{muparser} to use an arbritrary function from a file. 
+\end{enumerate}
+
+
+\section{Problems along the way}
+
+\begin{enumerate}
+	\item I initially wanted to implement a class, but I was not able to pass a non-static member function as a parameter of another function.
+	Memory is not yet allocated for the class object to call a member. I read to use \texttt{std::bind} or \texttt{std::invoke} but I could not figure out how.
+	\item \texttt{gnuplot} locale was not set properly and I had to look how to make it.
+	\begin{verbatim}
+		warning: iconv failed to convert degree sign
+	\end{verbatim}
+	\item  Every time I plot something I get the warning:
+	{
+	\small
+	\begin{verbatim}
+		QSocketNotifier: Can only be used with threads started with QThread
+	\end{verbatim}
+	}
+	I am using GNOME on Fedora 37.
+	\item I had issues with \texttt{muparser} when trying to create a self-contained code.
+	I tried to copy all shared objects file from the \texttt{pacs-examples/Examples/lib} directory, but I was not able to copy the symbolic links.
+	I got the following error from the linker:
+	\begin{verbatim}
+		cannot find -lmuparser
+	\end{verbatim}
+\end{enumerate}
+
+\end{document}
