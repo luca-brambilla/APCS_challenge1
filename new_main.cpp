@@ -30,7 +30,6 @@ int main(int argc, char **argv)
     unsigned int maxiter = 100;
     optimization::Point x0(2);
 
-    optimization::gd(myfun, myfun_grad, x0, alpha0, maxiter,epss, epsr);
-
-    std::cout << "hello!" << std::endl;
+    optimization::Point x_opt( optimization::gd(myfun, myfun_grad, x0, alpha0, maxiter,epss, epsr) );
+    optimization::print(x_opt);
 }

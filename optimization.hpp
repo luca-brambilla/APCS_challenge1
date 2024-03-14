@@ -50,7 +50,7 @@ namespace optimization{
     //template <class Function, class Dfunction>
     //double armijo(Function const &f, Dfunction const &df,
     inline double armijo(std::function<double(Point)> f, std::function<Point(Point)> df,
-                            const Point &x, const double &alpha0,
+                            const Point &xk, const double &alpha0,
                             const double &sigma = 0.25)
         /**
         * Armijo rule for adaptive learning rate
@@ -65,8 +65,7 @@ namespace optimization{
         **/
     {
         double a = alpha0;
-        Point xk(x);
-        Point xtmp;
+        Point xtmp(xk);
         Point grad( df(xk) );
         
         //! done twice - find a way to work with while loop
@@ -77,16 +76,18 @@ namespace optimization{
         double residual = f(xk) - f(xtmp);
         double vec_norm = norm(grad);
 
-        while ( residual >= sigma * a * vec_norm * vec_norm) 
+        // check for stopping rule
+        while ( residual <= sigma * a * vec_norm * vec_norm) 
         {
-            std::cout << a << std::endl;
+            // update learning rate
             a /= 2.0;
+            
+            // check for new residual
             for (size_t i = 0; i < xk.size(); ++i)
             {
                 xtmp[i] = xk[i] - a * grad[i];
             }
             residual = f(xk) - f(xtmp);
-            vec_norm = norm(grad);
         }
 
         return a;
@@ -124,7 +125,7 @@ namespace optimization{
         // begin iteration loop
         for (unsigned int k=0; (vec_norm>tols) or (residual>tolr) or (k>maxiter); ++k )
         {
-            std::cout << "iteration: " << k << std::endl;
+            // std::cout << "iteration: " << k << std::endl;
             // update gradient and learning rate
             grad = df(xk);
             alpha = armijo(f,df,xk,alpha);
@@ -142,8 +143,6 @@ namespace optimization{
 
             residual = std::abs( f(xk) - f(xtmp) );
             vec_norm = norm(grad);
-
-            optimization::print(xk);
         }
 
         return xk;
