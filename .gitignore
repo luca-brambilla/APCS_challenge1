@@ -1,1 +1,9 @@
 /lib
+*.pdf
+*.log
+*.aux
+*.gz
+*.o
+
+main
+new_main
