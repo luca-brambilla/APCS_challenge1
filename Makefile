@@ -7,7 +7,7 @@ CXXFLAGS ?= -std=c++20
 CPPFLAGS ?= -O3 -Wall -I. -Wno-conversion-null -Wno-deprecated-declarations
 
 
-EXEC     = main
+EXEC     = new_main
 LDFLAGS ?= 
 LDLIBS  ?= 
 
@@ -23,18 +23,18 @@ LDLIBS		    += -lmuparser
 
 # to use gnuplot
 # change flags if needed
-CPPFLAGS += -I./include -I$(mkBoostInc) -D GNUPLOT -D GNUTEMP #-D GNUPERM -D PLOTSAVE
+CPPFLAGS += -I./include -I$(mkBoostInc) #-D GNUPLOT -D GNUTEMP #-D GNUPERM -D PLOTSAVE
 LDFLAGS  += -L$(mkBoostLib)
 LDLIBS	 += -l boost_iostreams -l boost_system -l boost_filesystem
 
 all: $(EXEC)
 
 # COMPILER
-main.o: main.cpp solver_theta.hpp muparser_fun.hpp
+new_main.o: new_main.cpp optimization.hpp muparser_fun.hpp
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
 
 # LINKER and execute
-$(EXEC): main.o
+$(EXEC): new_main.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 	./$(EXEC)
 

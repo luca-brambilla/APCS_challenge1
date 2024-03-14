@@ -1,9 +1,13 @@
 \documentclass[]{article}
 
+\usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{verbatim}
 \usepackage{graphicx}
+\usepackage{bm}
 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 
 %opening
 \title{Advanced Programmig for Scientific Computing\\Challenge 1}
@@ -15,6 +19,24 @@
 	
 	
 \section{Problem}
+Minimization of a multivariate function through a gradient method
+
+$$\mathbf x = \argmin_{\mathbf y \in \mathbb R ^n} f(\mathbf y) $$
+
+$$\mathbf x_{k+1} = \mathbf x_k - \alpha_k \nabla f(\mathbf x_k), \quad k=0,1,...,k_{max}$$
+
+$$||\mathbf x_{k+1} - \mathbf x_k|| < \varepsilon_s$$
+$$|f(\mathbf x_{k+1})-f(\mathbf x_k)| \varepsilon_r$$
+$$k>k_{max}$$
+
+$$\alpha_k = \alpha_0 \exp{-\mu k}$$
+$$\alpha_k = \frac {\alpha_0}{1+\mu k}$$
+
+\begin{equation}
+	f(\mathbf x_k) - f(\mathbf x_k - \alpha_0\nabla f(\mathbf x_k)) \ge \sigma \alpha_0 ||\nabla f(\mathbf x_k)||^2
+\end{equation}
+
+
 Solve numerically the initially value Cauchy problem using the Crank-Nicolson numerical scheme.
 
 $$
@@ -72,7 +94,7 @@ to be plugged as part of $F(x)$ and $F'(x)$. In Figure \ref{fig::solution} we ca
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.8\textwidth]{../figures/plot_N25.pdf}
+	%\includegraphics[width=0.8\textwidth]{}
 	\caption{Plot of the solution of the problem. Comparing the exact solution and the approximated solution.}
 	\label{fig::solution}
 \end{figure}
@@ -87,7 +109,7 @@ We can see it in Figure \ref{fig::order2}.
 
 \begin{figure}[t!]
 	\centering
-	\includegraphics[width=0.8\textwidth]{../figures/conv_theta0.500000.pdf}
+	%\includegraphics[width=0.8\textwidth]{../figures/conv_theta0.500000.pdf}
 	\caption{The convergence analysis shows a $2^{nd}$ order convergence of the solution with respect to the discretization.}
 	\label{fig::order2}
 \end{figure}
@@ -113,8 +135,8 @@ Changing the value oh $\theta$ the order of convergence changes and we get linea
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta0.000000.pdf} \hfill
-	\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta1.000000.pdf}
+	%\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta0.000000.pdf} \hfill
+	%\includegraphics[trim={1.5cm 0 2cm 1cm},clip, width=0.49\textwidth]{../figures/conv_theta1.000000.pdf}
 	\caption{The convergence analysis shows a $1^{st}$ order convergence of the solution with respect to the discretization.}
 	\label{fig::order1}
 \end{figure}
