@@ -11,12 +11,28 @@
 #include <vector>
 
 //! typedef vector, can also be a different container?
+//! initialize vectors with dimensions instead of copy constructor?
+//! define direction-wise derivatives to optimize computation
 
 namespace optimization{
 
     typedef std::vector<double> Point;
     typedef std::vector<double> Grad;
-    
+    typedef std::function<double(Point)> Function;
+    typedef std::function<Point(Point)> Gradient;
+
+    enum Method {gd, moment};
+
+    struct parameters{
+        Point x0;
+        double alpha0 = 1.0;
+        unsigned int maxiter = 100;
+        double tols = 1e-6;
+        double tolr = 1e-6;
+        double sigma = 0.2;
+        double eta = 0.9;
+    };
+
     inline void print(Point const &x)
     {
         for (auto it = x.cbegin(); it != x.cend(); ++it)
@@ -95,11 +111,11 @@ namespace optimization{
 
     // template <class Function, class Dfunction>
     // Point gd(Function const &f, Dfunction const &df,
-    inline Point gd(std::function<double(Point)> f, std::function<Point(Point)> df,
+    inline Point gradient_descent(std::function<double(Point)> f, std::function<Point(Point)> df,
                             const Point &x0, const double &alpha0, const unsigned int &maxiter,
                             const double &tols, const double &tolr)
         /**
-        * Minimize using gradient descent with adaptive learning rate
+        * Minimize using the gradient descent method with adaptive learning rate
         * 
         * @param f        function to be optimized
         * @param df       derivative of the function to be optimized
@@ -114,8 +130,8 @@ namespace optimization{
     {
         // initialize points with correct dimensions
         Point xk(x0);
-        Point xtmp(x0);
-        Point grad(x0);
+        Point xtmp(x0.size());
+        Point grad(x0.size());
 
         //! put infinity
         double vec_norm = tols+1.0;
@@ -123,12 +139,12 @@ namespace optimization{
         double alpha = alpha0;
 
         // begin iteration loop
-        for (unsigned int k=0; (vec_norm>tols) or (residual>tolr) or (k>maxiter); ++k )
+        for (unsigned int k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
         {
             // std::cout << "iteration: " << k << std::endl;
             // update gradient and learning rate
             grad = df(xk);
-            alpha = armijo(f,df,xk,alpha);
+            alpha = armijo(f,df,xk,alpha0);
 
             // gradient descent element-wise
             for (size_t i=0; i<xk.size(); ++i)
@@ -137,8 +153,65 @@ namespace optimization{
                 xk[i] -= alpha * grad[i];
             }
 
-            // update gradient and learning rate
+            residual = std::abs( f(xk) - f(xtmp) );
+            vec_norm = norm(grad);
+        }
+
+        return xk;
+    }
+
+// template <class Function, class Dfunction>
+    // Point gd(Function const &f, Dfunction const &df,
+    inline Point momentum(std::function<double(Point)> f, std::function<Point(Point)> df,
+                            const Point &x0, const double &alpha0, const unsigned int &maxiter,
+                            const double &tols, const double &tolr,
+                            const double eta=0.9)
+        /**
+        * Minimize using the momentum method with adaptive learning rate
+        * 
+        * @param f        function to be optimized
+        * @param df       derivative of the function to be optimized
+        * @param x0       initial value
+        * @param alpha0   learning rate
+        * @param maxiter  maximum number of iterations
+        * @param tols     tolerance for the step length
+        * @param tolr     tolerance for the residual
+        * @param eta      memory parameter
+        * 
+        * @return res     double containing the optimization point
+        **/
+    {
+        // initialize points with correct dimensions
+        Point xk(x0);
+        Point xtmp(x0);
+        Point grad(x0.size());
+        Point d(x0.size());
+
+        //! put infinity
+        double vec_norm = tols+1.0;
+        double residual = tolr+1.0;
+        double alpha = alpha0;
+
+        // begin iteration loop
+        for (unsigned int k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
+        {
+            std::cout << "iteration: " << k << ", maxiter: " << maxiter << std::endl;
+            // update gradient
             grad = df(xk);
+
+            // momentum method element-wise
+            for (size_t i=0; i<xk.size(); ++i)
+            {
+                // update step
+                d[i] = eta*d[i] - alpha*grad[i];
+                // save old point
+                xtmp[i] = xk[i];
+                // find new point
+                xk[i] += d[i];
+            }
+            print(xk);
+
+            // learning rate
             alpha = armijo(f,df,xk,alpha0);
 
             residual = std::abs( f(xk) - f(xtmp) );
@@ -152,7 +225,8 @@ namespace optimization{
     // Point optimize(Function const &f, Dfunction const &df,
     inline Point optimize(std::function<double(Point)> f, std::function<Point(Point)> df,
                             const Point &x0, const double &alpha0, const unsigned int &maxiter,
-                            const double &tols, const double &tolr)
+                            const double &tols, const double &tolr,
+                            Method m)
         /**
         * Minimize using a chosen method among ... with adaptive learning rate
         * 
@@ -167,8 +241,18 @@ namespace optimization{
         * @return res     double containing the optimization point
         **/
     {
-        Point res = gd(f,df,x0,alpha0,maxiter,tols,tolr);
-
+        Point res(x0.size());
+        switch(m)
+        {
+            case gd : 
+                res = gradient_descent(f,df,x0,alpha0,maxiter,tols,tolr);
+                std::cout << "Gradient descent method" << std::endl;
+                break;
+            case moment : 
+                res = momentum(f,df,x0,alpha0,maxiter,tols,tolr);
+                std::cout << "Momentum method" << std::endl;
+                break;
+        }
         return res;
     }
 

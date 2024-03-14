@@ -1,6 +1,8 @@
 // Luca Brambilla
 // 10510718 - 919812
 
+#include <cstddef>
+#include <functional>
 #include <vector>
 #include <string>
 #include <cmath>            // exp, log
@@ -22,6 +24,21 @@ optimization::Point myfun_grad(std::vector<double> x)
     return grad;
 }
 
+optimization::Point gradient(std::vector<optimization::Function> grad, optimization::Point x)
+{
+    optimization::Point res(x);
+    if (grad.size() != x.size())
+    //! return not a number
+        return res;
+
+    for(unsigned int i=0; i<x.size(); ++i)
+    {
+        res[i] = grad[i](x);
+    }
+
+    return res;
+}
+
 int main(int argc, char **argv)
 {
     double epsr = 1e-6;
@@ -29,7 +46,9 @@ int main(int argc, char **argv)
     double alpha0 = 1.0;
     unsigned int maxiter = 100;
     optimization::Point x0(2);
+    optimization::Method method = optimization::moment;
 
-    optimization::Point x_opt( optimization::gd(myfun, myfun_grad, x0, alpha0, maxiter,epss, epsr) );
+    //! remove optimization and do it in main directly
+    optimization::Point x_opt( optimization::optimize(myfun, myfun_grad,x0,alpha0,maxiter,epss,epsr,method) );
     optimization::print(x_opt);
 }
