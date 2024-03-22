@@ -10,6 +10,9 @@
 #include <functional>
 #include <vector>
 
+//! adam not working
+//! decay not working
+
 //! typedef vector, can also be a different container?
 //! initialize vectors with dimensions instead of copy constructor?
 //! define direction-wise derivatives to optimize computation
@@ -28,7 +31,7 @@ namespace optimization{
     struct Parameters{
         Point x0;
         double alpha0 = 1.0;
-        unsigned int maxiter = 100;
+        size_t maxiter = 100;
         double tols = 1e-6;
         double tolr = 1e-6;
         double coeff = 0.2; // for adaptive learning rate
@@ -81,7 +84,7 @@ namespace optimization{
                             const double &mu = 0.2);                            
 
     //template<enum Decay>
-    double compute_decay(Decay const &dec, const size_t &k,
+    inline double compute_decay(Decay const &dec, const size_t &k,
                             const Point &xk, const double &alpha0,
                             const double &coeff = 0.25,
                             std::function<double(Point)> f = [](Point x){return x[0];},
@@ -100,7 +103,7 @@ namespace optimization{
             alpha = exponential(k, alpha0, coeff);
         }
 
-        std::cout<< alpha << std::endl;
+        std::cout<< "alpha: " << alpha << std::endl;
         return alpha;
     }
 
@@ -122,9 +125,9 @@ namespace optimization{
         **/
     {
         double a = alpha0;
-        Point xtmp(xk);
+        Point xtmp(xk.size());
         Point grad( df(xk) );
-        
+        size_t it = 0;
         //! done twice - find a way to work with while loop
         for (size_t i = 0; i < xk.size(); ++i)
         {
@@ -145,8 +148,9 @@ namespace optimization{
                 xtmp[i] = xk[i] - a * grad[i];
             }
             residual = f(xk) - f(xtmp);
+            ++it;
         }
-
+        std::cout << "niter armijo: " << it << std::endl;
         return a;
     }
 
@@ -186,7 +190,7 @@ namespace optimization{
     // Point gd(Function const &f, Dfunction const &df,
     inline Point gradient_descent( const Decay &dec, 
                             std::function<double(Point)> f, std::function<Point(Point)> df,
-                            const Point &x0, const double &alpha0, const unsigned int &maxiter,
+                            const Point &x0, const double &alpha0, const size_t &maxiter,
                             const double &tols, const double &tolr, const double& coeff)
         /**
         * Minimize using the gradient descent method with adaptive learning rate
@@ -213,7 +217,7 @@ namespace optimization{
         double alpha = alpha0;
 
         // begin iteration loop
-        for (unsigned int k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
+        for (size_t k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
         {
             // std::cout << "iteration: " << k << std::endl;
             // update gradient and learning rate
@@ -227,6 +231,8 @@ namespace optimization{
                 xk[i] -= alpha * grad[i];
             }
 
+            print(xk);
+
             residual = std::abs( f(xk) - f(xtmp) );
             vec_norm = norm(grad);
         }
@@ -238,7 +244,7 @@ namespace optimization{
     // Point gd(Function const &f, Dfunction const &df,
     inline Point momentum( const Decay &dec,
                             std::function<double(Point)> f, std::function<Point(Point)> df,
-                            const Point &x0, const double &alpha0, const unsigned int &maxiter,
+                            const Point &x0, const double &alpha0, const size_t &maxiter,
                             const double &tols, const double &tolr, const double &coeff=0.9,
                             const double &eta=0.9)
         /**
@@ -268,7 +274,7 @@ namespace optimization{
         double alpha = alpha0;
 
         // begin iteration loop
-        for (unsigned int k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
+        for (size_t k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
         {
             //std::cout << "iteration: " << k << ", maxiter: " << maxiter << std::endl;
             // update gradient
@@ -299,7 +305,7 @@ namespace optimization{
 
     inline Point adam( const Decay &dec,
                             std::function<double(Point)> f, std::function<Point(Point)> df,
-                            const Point &x0, const double &alpha0, const unsigned int &maxiter,
+                            const Point &x0, const double &alpha0, const size_t &maxiter,
                             const double &tols, const double &tolr, const double &coeff=0.9,
                             const double &beta1=0.9, const double &beta2=0.999,
                             const double &epsilon = 1.0e-8)
@@ -320,8 +326,8 @@ namespace optimization{
         * @return res     double containing the optimization point
         **/
     {
-        Point m; // first moment
-        Point v; // second moment
+        Point m(x0.size()); // first moment
+        Point v(x0.size()); // second moment
 
         // initialize points with correct dimensions
         Point xk(x0);
@@ -335,7 +341,7 @@ namespace optimization{
         double alpha = alpha0;
 
         // begin iteration loop
-        for (unsigned int k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
+        for (size_t k=0; (vec_norm>tols) and (residual>tolr) and (k<maxiter); ++k )
         {
             //std::cout << "iteration: " << k << ", maxiter: " << maxiter << std::endl;
             // update gradient
@@ -356,9 +362,12 @@ namespace optimization{
                 xtmp[i] = xk[i];
                 // find new point
                 //! sqrt(v) length of vector or element-wise?
-                xk[i] -= alpha * m[i]/(std::sqrt(v[i] + epsilon));
+                //! sqrt(v) if v is neg????
+                xk[i] -= alpha * m[i]/(std::sqrt(std::abs(v[i]) ) + epsilon);
             }
-            //print(xk);
+            //print(m);
+            //print(v);
+            print(xk);
 
             // learning rate
             alpha = compute_decay(dec,k,xk,alpha0,coeff,f,df);
@@ -404,7 +413,7 @@ namespace optimization{
                 res = adam(d, param.f,param.df,param.x0,param.alpha0,
                 param.maxiter,param.tols,param.tolr, param.coeff,
                 param.eta, param.beta2, param.eps);
-                std::cout << "Momentum method" << std::endl;
+                std::cout << "Adam optimizer" << std::endl;
                 break;
         }
 

@@ -31,7 +31,7 @@ optimization::Point gradient(std::vector<optimization::Function> grad, optimizat
     //! return not a number
         return res;
 
-    for(unsigned int i=0; i<x.size(); ++i)
+    for(size_t i=0; i<x.size(); ++i)
     {
         res[i] = grad[i](x);
     }
@@ -43,19 +43,19 @@ int main(int argc, char **argv)
 {
 
     optimization::Point x0(2);
-    optimization::Method method = optimization::gd;
-    optimization::Decay decay = optimization::inv;
+    optimization::Method method = optimization::ad;
+    optimization::Decay decay = optimization::arm;
 
     optimization::Parameters param;
 
     param.f = myfun;
     param.df = myfun_grad;
     param.x0 = x0;
-    param.alpha0 = 0.1;
+    param.alpha0 = 1.0;
     param.tolr = 1e-6;
     param.tols = 1e-6;
     param.maxiter = 1000;
-    param.coeff = 0.1;
+    param.coeff = 0.2;
 
     //! remove optimization and do it in main directly
     optimization::Point x_opt( optimization::optimize(param,method,decay) );
