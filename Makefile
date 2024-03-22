@@ -7,7 +7,7 @@ CXXFLAGS ?= -std=c++20
 CPPFLAGS ?= -O3 -Wall -I. -Wno-conversion-null -Wno-deprecated-declarations
 
 
-EXEC     = new_main
+EXEC     = main
 LDFLAGS ?= 
 LDLIBS  ?= 
 
@@ -16,35 +16,26 @@ LDLIBS  ?=
 # change PACS_ROOT!
 PACS_ROOT		?= /home/luca/Documents/pacs-examples/Examples
 LDFLAGS			+= -L $(PACS_ROOT)/lib -Wl,-rpath=$(PACS_ROOT)/lib
-LDLIBS		    += -lmuparser
+# LDLIBS		    += -lmuparser
 # local not working by copying the object files... in ./lib folder
 # LDFLAGS			+= -L./lib -Wl,-rpath=./lib
 # LDLIBS 			+= -l muparser
 
-# to use gnuplot
-# change flags if needed
-CPPFLAGS += -I./include -I$(mkBoostInc) #-D GNUPLOT -D GNUTEMP #-D GNUPERM -D PLOTSAVE
+CPPFLAGS += -I./include -I$(mkBoostInc)
 LDFLAGS  += -L$(mkBoostLib)
 LDLIBS	 += -l boost_iostreams -l boost_system -l boost_filesystem
 
 all: $(EXEC)
 
 # COMPILER
-new_main.o: new_main.cpp optimization.hpp muparser_fun.hpp
+main.o: main.cpp optimization.hpp muparser_fun.hpp
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
 
 # LINKER and execute
-$(EXEC): new_main.o
+$(EXEC): main.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 	./$(EXEC)
 
-
-cleandat:
-	$(RM) ./output/*.dat
-
-cleanfig:
-	$(RM) ./figures/plot*
-	
 clean:
 	$(RM) *.o
 	$(RM) ./report/*.aux ./report/*.log ./report/*.synctex.gz
