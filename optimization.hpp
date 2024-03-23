@@ -13,6 +13,8 @@
 //! adam not working
 //! decay not working
 
+//! inline or template?
+
 //! typedef vector, can also be a different container?
 //! initialize vectors with dimensions instead of copy constructor?
 //! define direction-wise derivatives to optimize computation
@@ -52,7 +54,6 @@ namespace optimization{
         std::cout << std::endl;
     }
 
-    //! why inline???
     inline double norm(Point const &vec)
         /**
         * Compute the euclidean norm of a vector
@@ -103,7 +104,7 @@ namespace optimization{
             alpha = exponential(k, alpha0, coeff);
         }
 
-        std::cout<< "alpha: " << alpha << std::endl;
+        //std::cout<< "alpha: " << alpha << std::endl;
         return alpha;
     }
 
@@ -150,7 +151,7 @@ namespace optimization{
             residual = f(xk) - f(xtmp);
             ++it;
         }
-        std::cout << "niter armijo: " << it << std::endl;
+        //std::cout << "niter armijo: " << it << std::endl;
         return a;
     }
 
@@ -230,8 +231,7 @@ namespace optimization{
                 xtmp[i] = xk[i];
                 xk[i] -= alpha * grad[i];
             }
-
-            print(xk);
+            //print(xk);
 
             residual = std::abs( f(xk) - f(xtmp) );
             vec_norm = norm(grad);
@@ -290,7 +290,7 @@ namespace optimization{
                 // find new point
                 xk[i] += d[i];
             }
-            print(xk);
+            //print(xk);
 
             // learning rate
             alpha = compute_decay(dec,k,xk,alpha0,coeff,f,df);
