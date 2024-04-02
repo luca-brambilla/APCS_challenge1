@@ -1,0 +1,7 @@
+I appreciated the presence of the tex, but many of the things written there should have been also in the README :)
+
+I haven't understood If you have employed or not gnuplot. 
+I don't see any results, nor a simple explanation on how to make it work.
+
+Implementation looks very good, altough there aren't many comments.
+
